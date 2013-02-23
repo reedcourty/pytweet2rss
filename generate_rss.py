@@ -5,6 +5,7 @@ import logging
 import shelve
 import datetime
 import os
+import re
 
 import PyRSS2Gen
 
@@ -80,7 +81,8 @@ for tweet in home_timeline:
             sn_url = '<a href="https://twitter.com/{0}">{0}</a>'.format(user_mention['screen_name'])
             logger.debug('sn_url = {0}'.format(sn_url))
             
-            content = content.replace(user_mention['screen_name'].encode('UTF-8'), sn_url.encode('UTF-8'))
+            resc = re.compile(re.escape(user_mention['screen_name'].encode('UTF-8')), re.IGNORECASE)
+            content = resc.sub(sn_url.encode('UTF-8'), content)          
             
             logger.debug('content = {0}'.format(content))
             
