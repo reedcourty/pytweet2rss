@@ -63,6 +63,8 @@ for tweet in home_timeline:
     logger.debug('tweet.text = {0}'.format(tweet.text.encode('UTF-8')))
     logger.debug('tweet.truncated = {0}'.format(tweet.truncated))
     logger.debug('tweet.user = {0}'.format(tweet.user))
+    
+    logger.debug('tweet.user.profile_image_url_https = {0}'.format(tweet.user.profile_image_url_https))  
             
     content = tweet.text.encode('UTF-8')
     logger.debug('content = {0}'.format(content))
@@ -80,9 +82,27 @@ for tweet in home_timeline:
             
             content = content.replace(user_mention['screen_name'].encode('UTF-8'), sn_url.encode('UTF-8'))
             
-            logger.debug('content = {0}'.format(content))  
+            logger.debug('content = {0}'.format(content))
+            
+    u_len = len(tweet.entities['urls'])
+    logger.debug('u_len = {0}'.format(u_len))
     
-    description = '<a href="https://twitter.com/{0}">{0}</a>: '.format(tweet.author.screen_name)
+    if (u_len > 0):
+        for url in tweet.entities['urls']:
+            logger.debug('url = {0}'.format(url))
+            
+            logger.debug('display_url = {0}'.format(url['display_url'].encode('UTF-8')))
+            logger.debug('expanded_url = {0}'.format(url['expanded_url'].encode('UTF-8')))
+            
+            r_url = u'<a href="{0}">{0}</a>'.format(url['url'].encode('UTF-8'))
+            logger.debug('r_url = {0}'.format(r_url))          
+            
+            content = content.replace(url['url'].encode('UTF-8'), r_url.encode('UTF-8'))
+            logger.debug('content = {0}'.format(content))
+    
+    description = '<img src="{0}" />'.format(tweet.user.profile_image_url_https)
+    
+    description = description + '<a href="https://twitter.com/{0}">{0}</a>: '.format(tweet.author.screen_name)
     logger.debug('description = {0}'.format(description))
     
     description = description + content + "<br /><br />"
