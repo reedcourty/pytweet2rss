@@ -95,7 +95,7 @@ for tweet in home_timeline:
     link = "https://twitter.com/" + tweet.author.screen_name + "/status/" + tweet.id_str
     
     rss_item = PyRSS2Gen.RSSItem(
-        title = tweet.text.encode('UTF-8'),
+        title = '{0}: {1}'.format(tweet.author.screen_name, tweet.text.encode('UTF-8')),
         author = tweet.author.screen_name,
         link = link,
         description = description,
