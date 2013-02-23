@@ -63,14 +63,32 @@ for tweet in home_timeline:
     logger.debug('tweet.text = {0}'.format(tweet.text.encode('UTF-8')))
     logger.debug('tweet.truncated = {0}'.format(tweet.truncated))
     logger.debug('tweet.user = {0}'.format(tweet.user))
+            
+    content = tweet.text.encode('UTF-8')
+    logger.debug('content = {0}'.format(content))
+    
+    um_len = len(tweet.entities['user_mentions'])
+    
+    logger.debug('um_len = {0}'.format(um_len))
+        
+    if (um_len > 0):
+        for user_mention in tweet.entities['user_mentions']:
+            logger.debug('user_mention = {0}'.format(user_mention))
+            
+            sn_url = '<a href="https://twitter.com/{0}">{0}</a>'.format(user_mention['screen_name'])
+            logger.debug('sn_url = {0}'.format(sn_url))
+            
+            content = content.replace(user_mention['screen_name'].encode('UTF-8'), sn_url.encode('UTF-8'))
+            
+            logger.debug('content = {0}'.format(content))  
     
     description = '<a href="https://twitter.com/{0}">{0}</a>: '.format(tweet.author.screen_name)
     logger.debug('description = {0}'.format(description))
     
-    description = description + tweet.text.encode('UTF-8') + "<br /><br />"
+    description = description + content + "<br /><br />"
     logger.debug('description = {0}'.format(description))
     
-    description = description + u"Világgá kűrtölve: {0}".format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")
+    description = description + u"Világgá kűrtölve: {0}".format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
     
     logger.debug('description = {0}'.format(description))
     
