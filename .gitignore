@@ -1,0 +1,12 @@
+# A virtualenv könyvtárat kihagyjuk a repóból:
+venv/
+
+# Nem kell a commit.log:
+commit.log
+
+# Lámaság lenne feltolni az OAuth-os tokeneket, key-eket:
+API.keys
+
+# Nincs szükség az elmentett tweetekre:
+homeline-tweets.db
+ 
