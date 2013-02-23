@@ -9,4 +9,6 @@ API.keys
 
 # Nincs szükség az elmentett tweetekre:
 homeline-tweets.db
- 
+
+# Nem kell a generált XML:
+timeline.xml
