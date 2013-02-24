@@ -101,6 +101,25 @@ for tweet in home_timeline:
             
             content = content.replace(url['url'].encode('UTF-8'), r_url.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
+            
+    try:
+        media_len = len(tweet.entities['media'])
+    except KeyError:
+        media_len = 0
+    logger.debug('media_len = {0}'.format(media_len))
+    
+    if (media_len > 0):
+        for media in tweet.entities['media']:
+            u = media['url']
+            logger.debug('u = {0}'.format(u))
+            
+            media_url = media['media_url_https']
+            logger.debug('media_url = {0}'.format(media_url))
+            
+            r_u = u'<a href={0}><img src={1} /><a/>'.format(u, media_url)
+            
+            content = content.replace(u.encode('UTF-8'), r_u.encode('UTF-8'))
+            logger.debug('content = {0}'.format(content))
     
     description = '<img src="{0}" />'.format(tweet.user.profile_image_url_https)
     
