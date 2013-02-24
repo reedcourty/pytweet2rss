@@ -59,7 +59,7 @@ for tweet in home_timeline:
     logger.debug('tweet.retweet_count = {0}'.format(tweet.retweet_count))
     logger.debug('tweet.retweeted = {0}'.format(tweet.retweeted))
     logger.debug('tweet.retweets = {0}'.format(tweet.retweets))
-    logger.debug('tweet.source = {0}'.format(tweet.source))
+    logger.debug('tweet.source = {0}'.format(tweet.source.encode('UTF-8')))
     logger.debug('tweet.source_url = {0}'.format(tweet.source_url))
     logger.debug('tweet.text = {0}'.format(tweet.text.encode('UTF-8')))
     logger.debug('tweet.truncated = {0}'.format(tweet.truncated))
@@ -129,7 +129,7 @@ for tweet in home_timeline:
     description = description + content + "<br /><br />"
     logger.debug('description = {0}'.format(description))
     
-    description = description + u"Világgá kűrtölve: {0}".format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
+    description = description + u"Világgá kürtölve: {0}".format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
     
     logger.debug('description = {0}'.format(description))
     
