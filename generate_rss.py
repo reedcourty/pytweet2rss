@@ -121,6 +121,28 @@ for tweet in home_timeline:
             content = content.replace(u.encode('UTF-8'), r_u.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
     
+    hashtags_len = len(tweet.entities['hashtags'])
+    logger.debug('hashtags_len = {0}'.format(hashtags_len))
+    
+    if (hashtags_len>0):
+        for hashtag in tweet.entities['hashtags']:
+            logger.debug('hashtag = {0}'.format(hashtag))
+            
+            hashtag_text = hashtag['text'].encode('UTF-8')
+            logger.debug('hashtag_text = {0}'.format(hashtag_text))
+            
+            hashtag_url = 'https://twitter.com/search?q=%23{0}&src=hash'.format(hashtag_text)
+            logger.debug('hashtag_url = {0}'.format(hashtag_url))
+            
+            r = '<a href="{0}">{1}</a>'.format(hashtag_url, hashtag['text'].encode('UTF-8'))
+            logger.debug('r = {0}'.format(r))
+            
+            content = content.replace(hashtag_text, r)
+            logger.debug('content = {0}'.format(content))
+            
+    content = content.replace('#', '<font style="color: rgb(122, 109, 241);">#</font>')
+    content = content.replace('@', '<font style="color: rgb(122, 109, 241);">@</font>')
+    
     description = '<img src="{0}" />'.format(tweet.user.profile_image_url_https)
     
     description = description + '<a href="https://twitter.com/{0}">{0}</a>: '.format(tweet.author.screen_name)
