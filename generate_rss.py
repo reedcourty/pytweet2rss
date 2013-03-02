@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*- #
 
 import logging
+import time
 import shelve
 import datetime
 import os
@@ -13,6 +14,14 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : 
 logger = logging.getLogger(__name__)
 
 logger.info('Start running script')
+
+def get_local_time_offset():
+    t = time.time()
+        
+    if time.localtime(t).tm_isdst and time.daylight:
+        return -time.altzone
+    else:
+        return -time.timezone
 
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 logger.debug('PROJECT_PATH = {0}'.format(PROJECT_PATH))
@@ -151,7 +160,16 @@ for tweet in home_timeline:
     description = description + content + "<br /><br />"
     logger.debug('description = {0}'.format(description))
     
-    description = description + u"Világgá kürtölve: {0}".format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
+    
+    
+    lto = get_local_time_offset()
+    logger.debug('lto = {0}'.format(lto))
+    logger.debug('tweet.created_at = {0}'.format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")))
+    
+    created_at = tweet.created_at + datetime.timedelta(seconds=lto)
+    logger.debug('created_at = {0}'.format(created_at.strftime("%Y-%m-%d %H:%M:%S")))
+    
+    description = description + u"Világgá kürtölve: {0}".format(created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
     
     logger.debug('description = {0}'.format(description))
     
@@ -163,7 +181,7 @@ for tweet in home_timeline:
         link = link,
         description = description,
         guid = PyRSS2Gen.Guid(link),
-        pubDate = tweet.created_at)
+        pubDate = created_at)
     
     rss.items.append(rss_item)
 
