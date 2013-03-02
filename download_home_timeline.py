@@ -32,7 +32,13 @@ logger.debug('ACCESS_SECRET = {0}'.format(ACCESS_SECRET))
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 
-api = tweepy.API(auth)
-
-s['home_timeline'] = api.home_timeline(count=200)
+try:
+    home_timeline = None
+    api = tweepy.API(auth)
+    home_timeline = api.home_timeline(count=1000)
+except tweepy.error.TweepError as e:
+    logger.debug('Bajok vannak: {0}'.format(e))
+    pass
+if home_timeline != None:
+    s['home_timeline'] = home_timeline
 s.close()
