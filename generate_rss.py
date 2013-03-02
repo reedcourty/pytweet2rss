@@ -181,7 +181,7 @@ for tweet in home_timeline:
         link = link,
         description = description,
         guid = PyRSS2Gen.Guid(link),
-        pubDate = created_at)
+        pubDate = tweet.created_at) # Úgy néz ki, hogy az UTC-t kell megadni
     
     rss.items.append(rss_item)
 
