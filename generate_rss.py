@@ -26,10 +26,13 @@ def get_local_time_offset():
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 logger.debug('PROJECT_PATH = {0}'.format(PROJECT_PATH))
 
-XML_PATH = PROJECT_PATH + "timeline.xml"
+XML_PATH = PROJECT_PATH + "/timeline.xml"
 logger.debug('XML_PATH = {0}'.format(XML_PATH))
 
-s = shelve.open('homeline-tweets.db')
+DB_PATH = PROJECT_PATH + "/homeline-tweets.db"
+logger.debug('DB_PATH = {0}'.format(DB_PATH))
+
+s = shelve.open(DB_PATH)
 
 rss = PyRSS2Gen.RSS2(
     title = "reedcourty's Twitter homeline",
@@ -187,6 +190,6 @@ for tweet in home_timeline:
 
 rss.lastBuildDate = datetime.datetime.now()
 
-rss.write_xml(open("timeline.xml", "w"), encoding="UTF-8")    
+rss.write_xml(open(XML_PATH, "w"), encoding="UTF-8")    
    
 s.close()

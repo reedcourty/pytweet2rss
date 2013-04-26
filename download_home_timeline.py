@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*- #
 
 import logging
+import os
 import shelve
 import json
 
@@ -11,10 +12,13 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : 
 logger = logging.getLogger(__name__)
 
 logger.info('Start running script')
- 
-s = shelve.open('homeline-tweets.db')
 
-file = open('API.keys', 'r+')
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
+logger.debug('PROJECT_PATH = {0}'.format(PROJECT_PATH))
+ 
+s = shelve.open(PROJECT_PATH + '/homeline-tweets.db')
+
+file = open(PROJECT_PATH + '/API.keys', 'r+')
 data = json.load(file)
 
 CONSUMER_KEY = data["CONSUMER_KEY"]
