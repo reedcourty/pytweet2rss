@@ -146,13 +146,13 @@ for tweet in home_timeline:
             hashtag_url = 'https://twitter.com/search?q=%23{0}&src=hash'.format(hashtag_text)
             logger.debug('hashtag_url = {0}'.format(hashtag_url))
             
-            r = '<a href="{0}">{1}</a>'.format(hashtag_url, hashtag['text'].encode('UTF-8'))
+            hashtag_text = '#' + hashtag_text
+            r = '<a href="{0}">{1}</a>'.format(hashtag_url, hashtag_text.replace('#', '<font style="color: rgb(122, 109, 241);">#</font>'))
             logger.debug('r = {0}'.format(r))
             
             content = content.replace(hashtag_text, r)
             logger.debug('content = {0}'.format(content))
             
-    content = content.replace('#', '<font style="color: rgb(122, 109, 241);">#</font>')
     content = content.replace('@', '<font style="color: rgb(122, 109, 241);">@</font>')
     
     description = '<img src="{0}" />'.format(tweet.user.profile_image_url_https)
