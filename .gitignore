@@ -12,3 +12,8 @@ homeline-tweets.db
 
 # Nem kell a generált XML:
 timeline.xml
+
+# Eclipse (project) specific files:
+.project
+.pydevproject
+.settings/
