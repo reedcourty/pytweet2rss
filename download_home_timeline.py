@@ -22,16 +22,9 @@ file = open(PROJECT_PATH + '/API.keys', 'r+')
 data = json.load(file)
 
 CONSUMER_KEY = data["CONSUMER_KEY"]
-logger.debug('CONSUMER_KEY = {0}'.format(CONSUMER_KEY))
-
-CONSUMER_SECRET = data["CONSUMER_SECRET"]
-logger.debug('CONSUMER_SECRET = {0}'.format(CONSUMER_SECRET))                
-
+CONSUMER_SECRET = data["CONSUMER_SECRET"]              
 ACCESS_KEY = data["ACCESS_KEY"]
-logger.debug('ACCESS_KEY = {0}'.format(ACCESS_KEY))
-
 ACCESS_SECRET = data["ACCESS_SECRET"]
-logger.debug('ACCESS_SECRET = {0}'.format(ACCESS_SECRET))
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
