@@ -10,7 +10,7 @@ import re
 
 import PyRSS2Gen
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s', filename='debug.log')
 logger = logging.getLogger(__name__)
 
 logger.info('Start running script')
@@ -123,13 +123,17 @@ for tweet in home_timeline:
     
     if (media_len > 0):
         for media in tweet.entities['media']:
+            
+            img_width = media['sizes']['small']['w']
+            logger.debug("img_width = {0}".format(img_width))
+            
             u = media['url']
             logger.debug('u = {0}'.format(u))
             
             media_url = media['media_url_https']
             logger.debug('media_url = {0}'.format(media_url))
             
-            r_u = u'<a href={0}><img src={1} /><a/>'.format(u, media_url)
+            r_u = u'<a href={0}><img src={1} width="{2}"/><a/>'.format(u, media_url, img_width)
             
             content = content.replace(u.encode('UTF-8'), r_u.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
