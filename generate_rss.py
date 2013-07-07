@@ -9,6 +9,8 @@ import os
 import re
 
 import PyRSS2Gen
+import requests
+from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
 logger = logging.getLogger(__name__)
@@ -27,9 +29,21 @@ def url_contents_tumblr_media(tweet):
     url = tweet.entities['urls'][0]['expanded_url']
     regexp = r'http[s]{0,1}:\/\/(\d)+\.media\.tumblr\.com'
     return (len(re.findall(regexp, url))!=0)
+
+def is_instagram_link(tweet):
+    url = tweet.entities['urls'][0]['expanded_url']
+    regexp = r'http[s]{0,1}:\/\/instagram.com\/'
+    return (len(re.findall(regexp, url))!=0)
+
+def get_instagram_media(url):
+    r = requests.get(url)
+    
+    soup = BeautifulSoup(r.content)
+    
+    return soup.find_all('img', attrs={"class": "photo"})[0]
     
     
-def create_rss_item(tweet):
+def create_rss_item(tweet):    
     logger.debug('######################################################################################################')
     logger.debug('tweet.author.screen_name = {0}'.format(tweet.author.screen_name))
     logger.debug('tweet.contributors = {0}'.format(tweet.contributors))
@@ -99,7 +113,11 @@ def create_rss_item(tweet):
                 logger.debug('r_url = {0}'.format(r_url)) 
             else:
                 r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
-                logger.debug('r_url = {0}'.format(r_url))          
+                logger.debug('r_url = {0}'.format(r_url))
+                
+            if is_instagram_link(tweet):
+                r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(url['expanded_url'].encode('UTF-8')))
+                logger.debug('r_url = {0}'.format(r_url))      
             
             content = content.replace(url['url'].encode('UTF-8'), r_url.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
