@@ -10,7 +10,7 @@ import re
 
 import PyRSS2Gen
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s', filename='debug.log')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
 logger = logging.getLogger(__name__)
 
 logger.info('Start running script')
@@ -22,27 +22,14 @@ def get_local_time_offset():
         return -time.altzone
     else:
         return -time.timezone
-
-PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-logger.debug('PROJECT_PATH = {0}'.format(PROJECT_PATH))
-
-XML_PATH = PROJECT_PATH + "/timeline.xml"
-logger.debug('XML_PATH = {0}'.format(XML_PATH))
-
-DB_PATH = PROJECT_PATH + "/homeline-tweets.db"
-logger.debug('DB_PATH = {0}'.format(DB_PATH))
-
-s = shelve.open(DB_PATH)
-
-rss = PyRSS2Gen.RSS2(
-    title = "reedcourty's Twitter homeline",
-    link = "http://ratucen.sch.bme.hu/mrkdev/static/timeline.xml",
-    description = "Twitter homeline",
-    items = [])
-
-home_timeline = s['home_timeline']
-
-for tweet in home_timeline:
+    
+def url_contents_tumblr_media(tweet):
+    url = tweet.entities['urls'][0]['expanded_url']
+    regexp = r'http[s]{0,1}:\/\/(\d)+\.media\.tumblr\.com'
+    return (len(re.findall(regexp, url))!=0)
+    
+    
+def create_rss_item(tweet):
     logger.debug('######################################################################################################')
     logger.debug('tweet.author.screen_name = {0}'.format(tweet.author.screen_name))
     logger.debug('tweet.contributors = {0}'.format(tweet.contributors))
@@ -76,32 +63,30 @@ for tweet in home_timeline:
     logger.debug('tweet.text = {0}'.format(tweet.text.encode('UTF-8')))
     logger.debug('tweet.truncated = {0}'.format(tweet.truncated))
     logger.debug('tweet.user = {0}'.format(tweet.user))
-    
     logger.debug('tweet.user.profile_image_url_https = {0}'.format(tweet.user.profile_image_url_https))  
-            
+    
     content = tweet.text.encode('UTF-8')
     logger.debug('content = {0}'.format(content))
     
-    um_len = len(tweet.entities['user_mentions'])
-    
-    logger.debug('um_len = {0}'.format(um_len))
+    user_mentions_size = len(tweet.entities['user_mentions'])
+    logger.debug('user_mentions_size = {0}'.format(user_mentions_size))
         
-    if (um_len > 0):
+    if (user_mentions_size > 0):
         for user_mention in tweet.entities['user_mentions']:
             logger.debug('user_mention = {0}'.format(user_mention))
             
-            sn_url = '<a href="https://twitter.com/{0}">{0}</a>'.format(user_mention['screen_name'])
-            logger.debug('sn_url = {0}'.format(sn_url))
+            screen_name_url = '<a href="https://twitter.com/{0}">{0}</a>'.format(user_mention['screen_name'])
+            logger.debug('screen_name_url = {0}'.format(screen_name_url))
             
             resc = re.compile(re.escape(user_mention['screen_name'].encode('UTF-8')), re.IGNORECASE)
-            content = resc.sub(sn_url.encode('UTF-8'), content)          
+            content = resc.sub(screen_name_url.encode('UTF-8'), content)          
             
             logger.debug('content = {0}'.format(content))
             
-    u_len = len(tweet.entities['urls'])
-    logger.debug('u_len = {0}'.format(u_len))
+    urls_size = len(tweet.entities['urls'])
+    logger.debug('urls_size = {0}'.format(urls_size))
     
-    if (u_len > 0):
+    if (urls_size > 0):
         for url in tweet.entities['urls']:
             logger.debug('url = {0}'.format(url))
             
@@ -109,8 +94,12 @@ for tweet in home_timeline:
             logger.debug('display_url = {0}'.format(url['display_url'].encode('UTF-8')))
             logger.debug('expanded_url = {0}'.format(url['expanded_url'].encode('UTF-8')))
             
-            r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
-            logger.debug('r_url = {0}'.format(r_url))          
+            if (url_contents_tumblr_media(tweet)):
+                r_url = u'<img src="{0}"/>'.format(url['expanded_url'].encode('UTF-8'))
+                logger.debug('r_url = {0}'.format(r_url)) 
+            else:
+                r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
+                logger.debug('r_url = {0}'.format(r_url))          
             
             content = content.replace(url['url'].encode('UTF-8'), r_url.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
@@ -170,11 +159,11 @@ for tweet in home_timeline:
     
     
     
-    lto = get_local_time_offset()
-    logger.debug('lto = {0}'.format(lto))
+    local_time_offset = get_local_time_offset()
+    logger.debug('local_time_offset = {0}'.format(local_time_offset))
     logger.debug('tweet.created_at = {0}'.format(tweet.created_at.strftime("%Y-%m-%d %H:%M:%S")))
     
-    created_at = tweet.created_at + datetime.timedelta(seconds=lto)
+    created_at = tweet.created_at + datetime.timedelta(seconds=local_time_offset)
     logger.debug('created_at = {0}'.format(created_at.strftime("%Y-%m-%d %H:%M:%S")))
     
     description = description + u"Világgá kürtölve: {0}".format(created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
@@ -192,6 +181,32 @@ for tweet in home_timeline:
         pubDate = tweet.created_at) # Úgy néz ki, hogy az UTC-t kell megadni
     
     rss.items.append(rss_item)
+
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
+logger.debug('PROJECT_PATH = {0}'.format(PROJECT_PATH))
+
+XML_PATH = PROJECT_PATH + "/timeline.xml"
+logger.debug('XML_PATH = {0}'.format(XML_PATH))
+
+DB_PATH = PROJECT_PATH + "/homeline-tweets.db"
+logger.debug('DB_PATH = {0}'.format(DB_PATH))
+
+s = shelve.open(DB_PATH)
+
+rss = PyRSS2Gen.RSS2(
+    title = "reedcourty's Twitter homeline",
+    link = "http://ratucen.sch.bme.hu/mrkdev/static/timeline.xml",
+    description = "Twitter homeline",
+    items = [])
+
+try:
+    home_timeline = s['home_timeline']
+
+    for tweet in home_timeline:
+        create_rss_item(tweet)
+except KeyError as e:
+    tweet = s['tweet']
+    create_rss_item(tweet)
 
 rss.lastBuildDate = datetime.datetime.now()
 
