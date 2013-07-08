@@ -43,12 +43,18 @@ def url_contents_some_media(tweet):
     return (len(re.findall(regexp, url))!=0)
 
 def get_instagram_media(url):
+    logger.debug('get_instagram_media -> url = {0}'.format(url))
     r = requests.get(url)
     
     soup = BeautifulSoup(r.content)
     
-    img = soup.find_all('img', attrs={"class": "photo"})[0]
-    
+    try:
+        logger.debug('get_instagram_media = {0}'.format(soup.find_all('img', attrs={"class": "photo"})))
+        img = soup.find_all('img', attrs={"class": "photo"})[0]
+    except IndexError as e:
+        # Maybe it was a video?
+        return url 
+        
     img_src = img['src']
     img_alt = img['alt']
     img_class = img['class'][0]
