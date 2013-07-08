@@ -15,6 +15,8 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
 logger = logging.getLogger(__name__)
 
+IMAGE_HEIGHT = '256px'
+
 logger.info('Start running script')
 
 def get_local_time_offset():
@@ -35,16 +37,29 @@ def is_instagram_link(tweet):
     regexp = r'http[s]{0,1}:\/\/instagram.com\/'
     return (len(re.findall(regexp, url))!=0)
 
+def url_contents_some_media(tweet):
+    url = tweet.entities['urls'][0]['expanded_url']
+    regexp = r'^http[s]{0,1}:\/\/.+\.(jpg|png)$'
+    return (len(re.findall(regexp, url))!=0)
+
 def get_instagram_media(url):
     r = requests.get(url)
     
     soup = BeautifulSoup(r.content)
     
-    return soup.find_all('img', attrs={"class": "photo"})[0]
+    img = soup.find_all('img', attrs={"class": "photo"})[0]
+    
+    img_src = img['src']
+    img_alt = img['alt']
+    img_class = img['class'][0]
+    
+    new_img = '<img alt="{}" class="{}" src="{}" height="{}"/>'.format(img_alt, img_class, img_src, IMAGE_HEIGHT)
+    
+    return new_img
     
     
 def create_rss_item(tweet):    
-    logger.debug('######################################################################################################')
+    logger.debug('######################################################################################################')    
     logger.debug('tweet.author.screen_name = {0}'.format(tweet.author.screen_name))
     logger.debug('tweet.contributors = {0}'.format(tweet.contributors))
     logger.debug('tweet.tweet.coordinates = {0}'.format(tweet.coordinates))
@@ -109,8 +124,11 @@ def create_rss_item(tweet):
             logger.debug('expanded_url = {0}'.format(url['expanded_url'].encode('UTF-8')))
             
             if (url_contents_tumblr_media(tweet)):
-                r_url = u'<img src="{0}"/>'.format(url['expanded_url'].encode('UTF-8'))
+                r_url = u'<img src="{0}" height="{1}"/>'.format(url['expanded_url'].encode('UTF-8'), IMAGE_HEIGHT)
                 logger.debug('r_url = {0}'.format(r_url)) 
+            elif (url_contents_some_media(tweet)):
+                r_url = u'<img src="{0}" height="{1}"/>'.format(url['expanded_url'].encode('UTF-8'), IMAGE_HEIGHT)
+                logger.debug('r_url = {0}'.format(r_url))
             else:
                 r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
                 logger.debug('r_url = {0}'.format(r_url))
@@ -131,8 +149,8 @@ def create_rss_item(tweet):
     if (media_len > 0):
         for media in tweet.entities['media']:
             
-            img_width = media['sizes']['small']['w']
-            logger.debug("img_width = {0}".format(img_width))
+            #img_width = media['sizes']['small']['w']
+            #logger.debug("img_width = {0}".format(img_width))
             
             u = media['url']
             logger.debug('u = {0}'.format(u))
@@ -140,7 +158,7 @@ def create_rss_item(tweet):
             media_url = media['media_url_https']
             logger.debug('media_url = {0}'.format(media_url))
             
-            r_u = u'<a href={0}><img src={1} width="{2}"/><a/>'.format(u, media_url, img_width)
+            r_u = u'<a href={0}><img src={1} height="{2}"/><a/>'.format(u, media_url, IMAGE_HEIGHT)
             
             content = content.replace(u.encode('UTF-8'), r_u.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
@@ -167,7 +185,7 @@ def create_rss_item(tweet):
             
     content = content.replace('@', '<font style="color: rgb(122, 109, 241);">@</font>')
     
-    description = '<img src="{0}" />'.format(tweet.user.profile_image_url_https)
+    description = '<img src="{0}" width="48px"/>'.format(tweet.user.profile_image_url_https)
     
     description = description + '<a href="https://twitter.com/{0}">{0}</a>: '.format(tweet.author.screen_name)
     logger.debug('description = {0}'.format(description))
