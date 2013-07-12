@@ -47,19 +47,25 @@ def get_instagram_media(url):
     r = requests.get(url)
     
     soup = BeautifulSoup(r.content)
+
+    l = []
+    script_list = soup.find_all('script')
+    for script in script_list:
+        try:
+            src = script['src']        
+        except KeyError as e:
+            l.append(script)
     
-    try:
-        logger.debug('get_instagram_media = {0}'.format(soup.find_all('img', attrs={"class": "photo"})))
-        img = soup.find_all('img', attrs={"class": "photo"})[0]
-    except IndexError as e:
-        # Maybe it was a video?
-        return url 
+    for script in l:
+        if (str(script).find("window._jscalls")!=-1):
+            workitem = str(script)
+    
+    workitem = workitem[workitem.find("display_src")+len("display_src")+3:len(workitem)]
+    img_src = workitem[0:workitem.find('"')].replace("\\", "")
+
+    logger.debug('get_instagram_media -> img_src = {0}'.format(img_src))
         
-    img_src = img['src']
-    img_alt = img['alt']
-    img_class = img['class'][0]
-    
-    new_img = '<img alt="{}" class="{}" src="{}" height="{}"/>'.format(img_alt, img_class, img_src, IMAGE_HEIGHT)
+    new_img = '<img src="{}" height="{}"/>'.format(img_src, IMAGE_HEIGHT)
     
     return new_img
     
