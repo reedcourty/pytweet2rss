@@ -37,6 +37,11 @@ def is_instagram_link(tweet):
     regexp = r'http[s]{0,1}:\/\/instagram.com\/'
     return (len(re.findall(regexp, url))!=0)
 
+def is_4sq_link(tweet):
+    url = tweet.entities['urls'][0]['expanded_url']
+    regexp = r'http[s]{0,1}:\/\/4sq.com\/'
+    return (len(re.findall(regexp, url))!=0)
+
 def url_contents_some_media(tweet):
     url = tweet.entities['urls'][0]['expanded_url']
     regexp = r'^http[s]{0,1}:\/\/.+\.(jpg|png)$'
@@ -69,6 +74,21 @@ def get_instagram_media(url):
     
     return new_img
     
+def get_4sq_media(url):
+    logger.debug('get_4sq_media -> url = {0}'.format(url))
+    r = requests.get(url)
+        
+    soup = BeautifulSoup(r.content)
+
+    # We're finding this: <meta content="https://irs1.4sqi.net/img/general/600x600/11752084_mgp3TtxZTzlEa2RLlKBfvzk8U2M1oRAHIFTaHcDiJbA.jpg" property="og:image"/>
+
+    img_src = soup.find('meta', property='og:image')['content']
+    
+    logger.debug('get_4sq_media -> img_src = {0}'.format(img_src))
+        
+    new_img = '<img src="{}" height="{}"/>'.format(img_src, IMAGE_HEIGHT)
+    
+    return new_img
     
 def create_rss_item(tweet):    
     logger.debug('######################################################################################################')    
@@ -147,7 +167,13 @@ def create_rss_item(tweet):
                 
             if is_instagram_link(tweet):
                 r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(url['expanded_url'].encode('UTF-8')))
-                logger.debug('r_url = {0}'.format(r_url))      
+                logger.debug('r_url = {0}'.format(r_url))
+                
+            logger.debug('"[pic]" in content = {}'.format("[pic]" in content))
+                
+            if (is_4sq_link(tweet) and ("[pic]" in content)):
+                r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_4sq_media(url['expanded_url'].encode('UTF-8')))
+                logger.debug('r_url = {0}'.format(r_url))
             
             content = content.replace(url['url'].encode('UTF-8'), r_url.encode('UTF-8'))
             logger.debug('content = {0}'.format(content))
