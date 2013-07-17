@@ -42,6 +42,19 @@ def is_4sq_link(tweet):
     regexp = r'http[s]{0,1}:\/\/4sq.com\/'
     return (len(re.findall(regexp, url))!=0)
 
+def is_mediumcom_link(tweet):
+    url = tweet.entities['urls'][0]['expanded_url']
+    regexp = r'http[s]{0,1}:\/\/medium.com\/'
+    return (len(re.findall(regexp, url))!=0)
+
+def get_nice_mediumcom_url(url):
+    METHOD_NAME = "get_nice_mediumcom_url"
+    logger.debug('{} -> url = {}'.format(METHOD_NAME, url))
+    nice_url = url.split("?")[0]
+    result_a_tag = u'<a href="{}">{}</a>'.format(url.encode('UTF-8'), nice_url.encode('UTF-8'))
+    logger.debug('{} -> result_a_tag = {}'.format(METHOD_NAME, result_a_tag))
+    return result_a_tag
+
 def url_contents_some_media(tweet):
     url = tweet.entities['urls'][0]['expanded_url']
     regexp = r'^http[s]{0,1}:\/\/.+\.(jpg|png)$'
@@ -167,6 +180,10 @@ def create_rss_item(tweet):
                 
             if is_instagram_link(tweet):
                 r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(url['expanded_url'].encode('UTF-8')))
+                logger.debug('r_url = {0}'.format(r_url))
+                
+            if is_mediumcom_link(tweet):
+                r_url = get_nice_mediumcom_url(url['expanded_url'].encode('UTF-8'))
                 logger.debug('r_url = {0}'.format(r_url))
                 
             logger.debug('"[pic]" in content = {}'.format("[pic]" in content))
