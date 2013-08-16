@@ -12,7 +12,7 @@ import PyRSS2Gen
 import requests
 from bs4 import BeautifulSoup
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
+logging.basicConfig(level=logging.DEBUG, filename="debug.log", format='%(asctime)s -- %(levelname)s : %(name)s -- %(message)s')
 logger = logging.getLogger(__name__)
 
 IMAGE_HEIGHT = '256px'
@@ -175,8 +175,11 @@ def create_rss_item(tweet):
                 r_url = u'<img src="{0}" height="{1}"/>'.format(url['expanded_url'].encode('UTF-8'), IMAGE_HEIGHT)
                 logger.debug('r_url = {0}'.format(r_url))
             else:
-                r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
-                logger.debug('r_url = {0}'.format(r_url))
+                try:
+                    r_url = u'<a href="{0}">{0}</a>'.format(url['expanded_url'].encode('UTF-8'))
+                    logger.debug('r_url = {0}'.format(r_url))
+                except UnicodeDecodeError as e:
+                    r_url = u'<a href="{0}">{0}</a>'.format(url['url'].encode('UTF-8'))
                 
             if is_instagram_link(tweet):
                 r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(url['expanded_url'].encode('UTF-8')))
@@ -257,8 +260,8 @@ def create_rss_item(tweet):
     created_at = tweet.created_at + datetime.timedelta(seconds=local_time_offset)
     logger.debug('created_at = {0}'.format(created_at.strftime("%Y-%m-%d %H:%M:%S")))
     
-    description = description + u"Világgá kürtölve: {0}".format(created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")    
-    
+    description = description + u"Világgá kürtölve: {0}".format(created_at.strftime("%Y-%m-%d %H:%M:%S")).encode("UTF-8")
+        
     logger.debug('description = {0}'.format(description))
     
     link = "https://twitter.com/" + tweet.author.screen_name + "/status/" + tweet.id_str
