@@ -60,7 +60,10 @@ def url_contents_some_media(tweet):
     regexp = r'^http[s]{0,1}:\/\/.+\.(jpg|png)$'
     return (len(re.findall(regexp, url))!=0)
 
-def get_instagram_media(url):
+def get_instagram_media(tweet):
+    
+    url = tweet.entities['urls'][0]['expanded_url']
+        
     logger.debug('get_instagram_media -> url = {0}'.format(url))
     r = requests.get(url)
     
@@ -79,8 +82,9 @@ def get_instagram_media(url):
             workitem = str(script)
     
     workitem = workitem[workitem.find("display_src")+len("display_src")+3:len(workitem)]
+    
     img_src = workitem[0:workitem.find('"')].replace("\\", "")
-
+    
     logger.debug('get_instagram_media -> img_src = {0}'.format(img_src))
         
     new_img = '<img src="{}" height="{}"/>'.format(img_src, IMAGE_HEIGHT)
@@ -182,7 +186,7 @@ def create_rss_item(tweet):
                     r_url = u'<a href="{0}">{0}</a>'.format(url['url'].encode('UTF-8'))
                 
             if is_instagram_link(tweet):
-                r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(url['expanded_url'].encode('UTF-8')))
+                r_url = u'<a href="{0}">{1}</a>'.format(url['expanded_url'].encode('UTF-8'), get_instagram_media(tweet))
                 logger.debug('r_url = {0}'.format(r_url))
                 
             if is_mediumcom_link(tweet):
